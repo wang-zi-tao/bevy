@@ -111,6 +111,7 @@ pub trait UiMaterial: AsBindGroup + Asset + Clone + Sized {
 pub struct UiMaterialKey<M: UiMaterial> {
     pub hdr: bool,
     pub bind_group_data: M::Data,
+    pub sample_count: i8,
 }
 
 impl<M: UiMaterial> Eq for UiMaterialKey<M> where M::Data: PartialEq {}
@@ -132,6 +133,7 @@ where
         Self {
             hdr: self.hdr,
             bind_group_data: self.bind_group_data.clone(),
+            sample_count: self.sample_count,
         }
     }
 }

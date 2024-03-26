@@ -194,7 +194,7 @@ where
             },
             depth_stencil: None,
             multisample: MultisampleState {
-                count: 1,
+                count: key.sample_count as u32,
                 mask: !0,
                 alpha_to_coverage_enabled: false,
             },
@@ -613,7 +613,7 @@ pub fn queue_ui_material_nodes<M: UiMaterial>(
     pipeline_cache: Res<PipelineCache>,
     render_materials: Res<RenderAssets<PreparedUiMaterial<M>>>,
     mut transparent_render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
-    mut views: Query<&ExtractedView>,
+    mut views: Query<(&ExtractedView, &Msaa)>,
 ) where
     M::Data: PartialEq + Eq + Hash + Clone,
 {
@@ -623,7 +623,7 @@ pub fn queue_ui_material_nodes<M: UiMaterial>(
         let Some(material) = render_materials.get(extracted_uinode.material) else {
             continue;
         };
-        let Ok(view) = views.get_mut(extracted_uinode.camera_entity) else {
+        let Ok((view, msaa)) = views.get_mut(extracted_uinode.camera_entity) else {
             continue;
         };
         let Some(transparent_phase) =
@@ -638,12 +638,13 @@ pub fn queue_ui_material_nodes<M: UiMaterial>(
             UiMaterialKey {
                 hdr: view.hdr,
                 bind_group_data: material.key.clone(),
+                sample_count: msaa.samples() as i8,
             },
         );
         if transparent_phase.items.capacity() < extracted_uinodes.uinodes.len() {
             transparent_phase.items.reserve_exact(
                 extracted_uinodes.uinodes.len() - transparent_phase.items.capacity(),
-            );
+        );
         }
         transparent_phase.add(TransparentUi {
             draw_function,

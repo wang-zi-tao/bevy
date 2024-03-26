@@ -18,6 +18,7 @@ use bevy_ecs::entity::{EntityHashMap, EntityHashSet};
 use bevy_ecs::prelude::*;
 use bevy_image::Image;
 use bevy_math::{FloatOrd, Mat4, Rect, UVec4, Vec2, Vec3, Vec3Swizzles, Vec4Swizzles};
+use bevy_render::view::Msaa;
 use bevy_render::render_phase::ViewSortedRenderPhases;
 use bevy_render::sync_world::MainEntity;
 use bevy_render::texture::TRANSPARENT_IMAGE_HANDLE;
@@ -793,13 +794,13 @@ pub fn queue_uinodes(
     ui_pipeline: Res<UiPipeline>,
     mut pipelines: ResMut<SpecializedRenderPipelines<UiPipeline>>,
     mut transparent_render_phases: ResMut<ViewSortedRenderPhases<TransparentUi>>,
-    mut views: Query<(Entity, &ExtractedView, Option<&UiAntiAlias>)>,
+    mut views: Query<(Entity, &ExtractedView, &Msaa, Option<&UiAntiAlias>)>,
     pipeline_cache: Res<PipelineCache>,
     draw_functions: Res<DrawFunctions<TransparentUi>>,
 ) {
     let draw_function = draw_functions.read().id::<DrawUi>();
     for (entity, extracted_uinode) in extracted_uinodes.uinodes.iter() {
-        let Ok((view_entity, view, ui_anti_alias)) = views.get_mut(extracted_uinode.camera_entity)
+        let Ok((view_entity, view, msaa, ui_anti_alias)) = views.get_mut(extracted_uinode.camera_entity)
         else {
             continue;
         };
@@ -814,6 +815,7 @@ pub fn queue_uinodes(
             UiPipelineKey {
                 hdr: view.hdr,
                 anti_alias: matches!(ui_anti_alias, None | Some(UiAntiAlias::On)),
+                sample_count: msaa.samples() as i8
             },
         );
         transparent_phase.add(TransparentUi {

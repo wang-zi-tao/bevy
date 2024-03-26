@@ -49,6 +49,7 @@ impl FromWorld for UiPipeline {
 pub struct UiPipelineKey {
     pub hdr: bool,
     pub anti_alias: bool,
+    pub sample_count: i8,
 }
 
 impl SpecializedRenderPipeline for UiPipeline {
@@ -114,7 +115,7 @@ impl SpecializedRenderPipeline for UiPipeline {
             },
             depth_stencil: None,
             multisample: MultisampleState {
-                count: 1,
+                count: key.sample_count as u32,
                 mask: !0,
                 alpha_to_coverage_enabled: false,
             },

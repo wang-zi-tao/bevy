@@ -199,7 +199,7 @@ where
             },
             depth_stencil: None,
             multisample: MultisampleState {
-                count: 1,
+                count: key.sample_count as u32,
                 mask: !0,
                 alpha_to_coverage_enabled: false,
             },
@@ -741,6 +741,7 @@ pub fn queue_ui_material_nodes<M: UiMaterial>(
     pipeline_cache: Res<PipelineCache>,
     render_materials: Res<RenderUiMaterials<M>>,
     mut views: Query<(&ExtractedView, &mut RenderPhase<TransparentUi>)>,
+    msaa: Res<Msaa>,
 ) where
     M::Data: PartialEq + Eq + Hash + Clone,
 {
@@ -757,6 +758,7 @@ pub fn queue_ui_material_nodes<M: UiMaterial>(
                 UiMaterialKey {
                     hdr: view.hdr,
                     bind_group_data: material.key.clone(),
+                    sample_count: msaa.samples() as i8
                 },
             );
             transparent_phase

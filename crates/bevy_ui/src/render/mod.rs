@@ -6,6 +6,7 @@ use bevy_core_pipeline::core_2d::graph::{Core2d, Node2d};
 use bevy_core_pipeline::core_3d::graph::{Core3d, Node3d};
 use bevy_core_pipeline::{core_2d::Camera2d, core_3d::Camera3d};
 use bevy_hierarchy::Parent;
+use bevy_render::view::Msaa;
 use bevy_render::{
     render_phase::PhaseItem, render_resource::BindGroupEntries, view::ViewVisibility,
     ExtractSchedule, Render,
@@ -693,6 +694,7 @@ pub fn queue_uinodes(
     mut views: Query<(&ExtractedView, &mut RenderPhase<TransparentUi>)>,
     pipeline_cache: Res<PipelineCache>,
     draw_functions: Res<DrawFunctions<TransparentUi>>,
+    msaa: Res<Msaa>,
 ) {
     let draw_function = draw_functions.read().id::<DrawUi>();
     for (entity, extracted_uinode) in extracted_uinodes.uinodes.iter() {
@@ -704,7 +706,7 @@ pub fn queue_uinodes(
         let pipeline = pipelines.specialize(
             &pipeline_cache,
             &ui_pipeline,
-            UiPipelineKey { hdr: view.hdr },
+            UiPipelineKey { hdr: view.hdr, sample_count: msaa.samples() as i8 },
         );
         transparent_phase.add(TransparentUi {
             draw_function,
